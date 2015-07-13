@@ -1,5 +1,12 @@
 ;;; dictcc --- Look up translations on dict.cc  -*- lexical-binding: t; -*-
 
+;; Copyright (C) 2015 Marten Lienen
+
+;; Author: Marten Lienen <marten.lienen@gmail.com>
+;; Version: 0.1.0
+;; Keywords: convenience
+;; Package-Requires: ((s "1.0") (dash "2.0") (helm))
+
 ;;; Commentary:
 
 ;; Look up translations on dict.cc. You then pick one of them through a helm
