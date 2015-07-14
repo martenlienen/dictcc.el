@@ -48,9 +48,8 @@
   (search-forward "\n\n")
   (let* ((doc (libxml-parse-html-region (point) (point-max)))
          (rows (dictcc--find-translation-rows doc))
-         (texts (mapcar #'dictcc--extract-translations rows))
-         (english (mapcar #'car texts)))
-    english))
+         (translations (mapcar #'dictcc--extract-translations rows)))
+    translations))
 
 (defun dictcc--find-translation-rows (doc)
   "Find all table rows with translations in them in DOC.
@@ -81,11 +80,11 @@ id='trXXX'></tr>."
   (let* ((cells (cddr row))
          (c1 (nth 1 cells))
          (c2 (nth 2 cells)))
-    (list (dictcc--cell-to-text c1)
-          (dictcc--cell-to-text c2))))
+    (list (cons (dictcc--tag-to-text c1) (dictcc--extract-translation c1))
+          (cons (dictcc--tag-to-text c2) (dictcc--extract-translation c2)))))
 
-(defun dictcc--cell-to-text (cell)
-  "Extract the text from a single table CELL."
+(defun dictcc--extract-translation (cell)
+  "Extract the translation from a table CELL."
   (let* ((children (cddr cell))
          (links (-filter #'dictcc--translation-tag-p children))
          (words (mapcar #'dictcc--tag-to-text links)))
@@ -112,11 +111,14 @@ This is the case, if tag is either <a>...</a> or
 
 (defun dictcc--select-translation (word translations)
   "Select one from TRANSLATIONS and insert it into the buffer."
-  (let ((source `((name . ,(format "Translations for %s" word))
-                  (candidates . ,translations)
-                  (action . ,(lambda (w)
-                               (message w)
-                               (insert w))))))
+  (let* ((candidates (mapcar
+                      (lambda (t)
+                        (cons (format "%-30s -- %30s" (caar t) (caadr t)) t))
+                      translations))
+         (source `((name . ,(format "Translations for «%s»" word))
+                   (candidates . ,candidates)
+                   (action . ,(lambda (t)
+                                (insert (cdar t)))))))
     (helm :sources (list source))))
 
 ;;;###autoload
