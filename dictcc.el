@@ -120,15 +120,15 @@ Emacs does not like my regexps."
                   (mapcar (lambda (tag) (concat "[" tag "]"))
                           (dictcc--translation-tags translation)))))
 
-(defun dictcc--request (word)
-  "Send the request to look up WORD on dict.cc."
+(defun dictcc--request (query)
+  "Send the request to look up QUERY on dict.cc."
   (let ((buffer (current-buffer)))
-    (url-retrieve (format "http://www.dict.cc/?s=%s" (url-encode-url word))
+    (url-retrieve (format "http://www.dict.cc/?s=%s" (url-encode-url query))
                   (lambda (log)
                     (let ((translations (dictcc--parse-http-response)))
                       (save-excursion
                         (switch-to-buffer buffer)
-                        (dictcc--select-translation word translations)))))))
+                        (dictcc--select-translation query translations)))))))
 
 (defun dictcc--parse-http-response ()
   "Parse the HTTP response into a list of translation pairs."
@@ -199,10 +199,10 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
       (substring string 0 dictcc-candidate-width)
     string))
 
-(defun dictcc--select-translation (word translations)
+(defun dictcc--select-translation (query translations)
   "Select one from TRANSLATIONS and insert it into the buffer."
   (let* ((candidates (mapcar #'dictcc--candidate translations))
-         (source `((name . ,(format "Translations for «%s»" word))
+         (source `((name . ,(format "Translations for «%s»" query))
                    (candidates . ,candidates)
                    (action . ,(helm-make-actions
                                "Insert English translation"
@@ -212,10 +212,10 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
     (helm :sources (list source))))
 
 ;;;###autoload
-(defun dictcc (word)
-  "Look up translations of WORD and insert into the buffer."
-  (interactive "sWord: \n")
-  (dictcc--request word))
+(defun dictcc (query)
+  "Search dict.cc for QUERY and insert a result at point."
+  (interactive "sQuery: \n")
+  (dictcc--request query))
 
 (provide 'dictcc)
 ;;; dictcc.el ends here
