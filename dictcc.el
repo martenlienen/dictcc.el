@@ -1,7 +1,7 @@
 ;;; dictcc --- Look up translations on dict.cc  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2015 Marten Lienen
-
+;;
 ;; Author: Marten Lienen <marten.lienen@gmail.com>
 ;; Version: 0.1.0
 ;; Keywords: convenience
