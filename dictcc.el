@@ -5,7 +5,7 @@
 ;; Author: Marten Lienen <marten.lienen@gmail.com>
 ;; Version: 0.1.0
 ;; Keywords: convenience
-;; Package-Requires: ((s "1.0") (dash "2.0") (helm))
+;; Package-Requires: ((s "1.0") (dash "2.0") (helm "1.0"))
 
 ;; This file is not part of GNU Emacs.
 
