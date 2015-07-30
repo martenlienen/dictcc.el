@@ -32,6 +32,82 @@
 (require 'dash)
 (require 's)
 (require 'helm)
+(require 'cl)
+
+(cl-defstruct dictcc--translation text tags)
+
+(defun dictcc--translation-from-cell (cell)
+  "Create a dictcc--translation from the contents of CELL."
+  (let ((words) (tags-nodes))
+    ;; Split nodes in words and tag nodes
+    (dolist (child (cddr cell))
+      (when (listp child)
+        (case (car child)
+          ('dfn (setq tags-nodes (cons child tags-nodes)))
+          ('var (setq tags-nodes (cons child tags-nodes)))
+          ('a
+           (let ((inner-tag (caddr child)))
+             (if (and (listp inner-tag) (eq 'kbd (car inner-tag)))
+                 (setq tags-nodes (cons child tags-nodes))
+               (setq words (cons (dictcc--tag-to-text child) words))))))))
+    (setq words (reverse words)
+          tags-nodes (reverse tags-nodes))
+
+    ;; Search for tags in a string form, so that we can more easily find tags,
+    ;; that are split across tags (multi-word tags).
+    (let* ((tag-strings (mapcar #'dictcc--tag-to-text tags-nodes))
+           (tag-string (s-join " " tag-strings))
+           (tags (dictcc--tags-from-string tag-string)))
+      (make-dictcc--translation :text (s-join " " words)
+                                :tags tags))))
+
+(defun dictcc--tags-from-string (string)
+  "Extract a list of tags from STRING.
+
+This is implemented as a deterministic finite automaton, because
+Emacs does not like my regexps."
+  (let ((state 'initial) (pos 0) (start 0) (len (length string))
+        (matches))
+    (while (< pos len)
+      (let ((char (aref string pos)))
+        (case state
+          ('initial
+           (case char
+             (?\s (setq pos (1+ pos)))  ; Eat up whitespace
+             ((?\[ ?\{)
+              (setq state 'pair
+                    pos (1+ pos)
+                    start pos))
+             (t (setq state 'word
+                      start pos))))
+          ('word
+           (case char
+             (?\s                       ; Space
+              (setq matches (cons (substring string start pos) matches)
+                    pos (1+ pos)
+                    state 'initial))
+             (t (setq pos (1+ pos)))))
+          ('pair
+           (case char
+             ((?\] ?\})
+              (setq matches (cons (substring string start pos) matches)
+                    pos (1+ pos)
+                    state 'initial))
+             (t (setq pos (1+ pos))))))))
+
+    ;; Create a last match if the automaton halted in a matching state
+    (when (or (eq state 'word) (eq state 'pair))
+      (setq matches (cons (substring string start pos) matches)))
+
+    (reverse matches)))
+
+(defun dictcc--translation-to-string (translation)
+  "Generate a string representation of TRANSLATION."
+  (concat (dictcc--translation-text translation)
+          " "
+          (s-join " "
+                  (mapcar (lambda (tag) (concat "[" tag "]"))
+                          (dictcc--translation-tags translation)))))
 
 (defun dictcc--request (word)
   "Send the request to look up WORD on dict.cc."
@@ -44,7 +120,7 @@
                         (dictcc--select-translation word translations)))))))
 
 (defun dictcc--parse-http-response ()
-  "Parse the HTTP response and extract the translations."
+  "Parse the HTTP response into a list of translation pairs."
   (search-forward "\n\n")
   (let* ((doc (libxml-parse-html-region (point) (point-max)))
          (rows (dictcc--find-translation-rows doc))
@@ -52,10 +128,9 @@
     translations))
 
 (defun dictcc--find-translation-rows (doc)
-  "Find all table rows with translations in them in DOC.
+  "Find all translation table rows in DOC.
 
-At the moment all translations are elements of the form <tr
-id='trXXX'></tr>."
+At the moment they are of the form `<tr id='trXXX'></tr>'."
   (let ((rows nil)
         (elements (list doc)))
     (while elements
@@ -77,29 +152,9 @@ id='trXXX'></tr>."
 
 (defun dictcc--extract-translations (row)
   "Extract translation texts from table ROW."
-  (let* ((cells (cddr row))
-         (c1 (nth 1 cells))
-         (c2 (nth 2 cells)))
-    (list (cons (dictcc--tag-to-text c1) (dictcc--extract-translation c1))
-          (cons (dictcc--tag-to-text c2) (dictcc--extract-translation c2)))))
-
-(defun dictcc--extract-translation (cell)
-  "Extract the translation from a table CELL."
-  (let* ((children (cddr cell))
-         (links (-filter #'dictcc--translation-tag-p children))
-         (words (mapcar #'dictcc--tag-to-text links)))
-    (s-join " " words)))
-
-(defun dictcc--translation-tag-p (tag)
-  "Check, if TAG is part of the translation.
-
-This is the case, if tag is either <a>...</a> or
-<a><b>...</b></a>."
-  (and (listp tag)
-       (eq (car tag) 'a)
-       (let ((child (caddr tag)))
-         (or (stringp child)
-             (eq (car child) 'b)))))
+  (let* ((cells (cddr row)))
+    (cons (dictcc--translation-from-cell (nth 1 cells))
+          (dictcc--translation-from-cell (nth 2 cells)))))
 
 (defun dictcc--tag-to-text (tag)
   "Concatenate the string contents of TAG and its children."
@@ -111,14 +166,17 @@ This is the case, if tag is either <a>...</a> or
 
 (defun dictcc--select-translation (word translations)
   "Select one from TRANSLATIONS and insert it into the buffer."
-  (let* ((candidates (mapcar
-                      (lambda (t)
-                        (cons (format "%-30s -- %30s" (caar t) (caadr t)) t))
-                      translations))
+  (let* ((candidates (mapcar (lambda (pair)
+                               (cons (format
+                                      "%-30s -- %30s"
+                                      (dictcc--translation-to-string (car pair))
+                                      (dictcc--translation-to-string (cdr pair)))
+                                     pair))
+                             translations))
          (source `((name . ,(format "Translations for «%s»" word))
                    (candidates . ,candidates)
                    (action . ,(lambda (t)
-                                (insert (cdar t)))))))
+                                (insert (dictcc--translation-text (car t))))))))
     (helm :sources (list source))))
 
 ;;;###autoload
