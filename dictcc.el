@@ -34,6 +34,17 @@
 (require 'helm)
 (require 'cl)
 
+(defgroup dictcc ()
+  "Look up translations on dict.cc."
+  :group 'convenience
+  :group 'external
+  :prefix "dictcc-")
+
+(defcustom dictcc-candidate-width 30
+  "Maximum length of a translation candidate."
+  :type 'integer
+  :group 'dictcc)
+
 (cl-defstruct dictcc--translation text tags)
 
 (defun dictcc--translation-from-cell (cell)
@@ -164,19 +175,40 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
            (texts (mapcar #'dictcc--tag-to-text children)))
       (s-join "" texts))))
 
+(defun dictcc--insert-english-translation (pair)
+  "Insert the English translation of the selected PAIR."
+  (insert (dictcc--translation-text (car pair))))
+
+(defun dictcc--insert-german-translation (pair)
+  "Insert the German translation of the selected PAIR."
+  (insert (dictcc--translation-text (cdr pair))))
+
+(defun dictcc--candidate (pair)
+  "Generate the candidate pair for a PAIR of translations."
+  (let* ((format-string (format "%%-%ds -- %%%ds"
+                                dictcc-candidate-width
+                                dictcc-candidate-width))
+         (english (dictcc--cap-string (dictcc--translation-to-string (car pair))))
+         (german (dictcc--cap-string (dictcc--translation-to-string (cdr pair))))
+         (text (format format-string english german)))
+    (cons text pair)))
+
+(defun dictcc--cap-string (string)
+  "Cut the STRING if it is too long."
+  (if (> (length string) dictcc-candidate-width)
+      (substring string 0 dictcc-candidate-width)
+    string))
+
 (defun dictcc--select-translation (word translations)
   "Select one from TRANSLATIONS and insert it into the buffer."
-  (let* ((candidates (mapcar (lambda (pair)
-                               (cons (format
-                                      "%-30s -- %30s"
-                                      (dictcc--translation-to-string (car pair))
-                                      (dictcc--translation-to-string (cdr pair)))
-                                     pair))
-                             translations))
+  (let* ((candidates (mapcar #'dictcc--candidate translations))
          (source `((name . ,(format "Translations for «%s»" word))
                    (candidates . ,candidates)
-                   (action . ,(lambda (t)
-                                (insert (dictcc--translation-text (car t))))))))
+                   (action . ,(helm-make-actions
+                               "Insert English translation"
+                               #'dictcc--insert-english-translation
+                               "Insert German translation"
+                               #'dictcc--insert-german-translation)))))
     (helm :sources (list source))))
 
 ;;;###autoload
