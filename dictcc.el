@@ -1,11 +1,11 @@
-;;; dictcc --- Look up translations on dict.cc  -*- lexical-binding: t; -*-
+;;; dictcc.el --- Look up translations on dict.cc  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2015 Marten Lienen
 ;;
 ;; Author: Marten Lienen <marten.lienen@gmail.com>
 ;; Version: 0.1.0
 ;; Keywords: convenience
-;; Package-Requires: ((s "1.0") (dash "2.0") (helm "1.0"))
+;; Package-Requires: ((emacs "24") (cl-lib "0.5") (s "1.0") (dash "2.0") (helm "1.0"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -32,7 +32,7 @@
 (require 'dash)
 (require 's)
 (require 'helm)
-(require 'cl)
+(require 'cl-lib)
 
 (defgroup dictcc ()
   "Look up translations on dict.cc."
@@ -53,11 +53,11 @@
     ;; Split nodes in words and tag nodes
     (dolist (child (cddr cell))
       (when (listp child)
-        (case (car child)
+        (cl-case (car child)
           ('dfn (setq tags-nodes (cons child tags-nodes)))
           ('var (setq tags-nodes (cons child tags-nodes)))
           ('a
-           (let ((inner-tag (caddr child)))
+           (let ((inner-tag (cl-caddr child)))
              (if (and (listp inner-tag) (eq 'kbd (car inner-tag)))
                  (setq tags-nodes (cons child tags-nodes))
                (setq words (cons (dictcc--tag-to-text child) words))))))))
@@ -81,9 +81,9 @@ Emacs does not like my regexps."
         (matches))
     (while (< pos len)
       (let ((char (aref string pos)))
-        (case state
+        (cl-case state
           ('initial
-           (case char
+           (cl-case char
              (?\s (setq pos (1+ pos)))  ; Eat up whitespace
              ((?\[ ?\{)
               (setq state 'pair
@@ -92,14 +92,14 @@ Emacs does not like my regexps."
              (t (setq state 'word
                       start pos))))
           ('word
-           (case char
+           (cl-case char
              (?\s                       ; Space
               (setq matches (cons (substring string start pos) matches)
                     pos (1+ pos)
                     state 'initial))
              (t (setq pos (1+ pos)))))
           ('pair
-           (case char
+           (cl-case char
              ((?\] ?\})
               (setq matches (cons (substring string start pos) matches)
                     pos (1+ pos)
@@ -124,7 +124,7 @@ Emacs does not like my regexps."
   "Send the request to look up QUERY on dict.cc."
   (let ((buffer (current-buffer)))
     (url-retrieve (format "http://www.dict.cc/?s=%s" (url-encode-url query))
-                  (lambda (log)
+                  (lambda (_log)
                     (let ((translations (dictcc--parse-http-response)))
                       (save-excursion
                         (switch-to-buffer buffer)
