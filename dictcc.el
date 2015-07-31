@@ -1,4 +1,4 @@
-;;; dictcc --- Look up translations on dict.cc  -*- lexical-binding: t; -*-
+;;; dictcc.el --- Look up translations on dict.cc  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2015 Marten Lienen
 ;;
