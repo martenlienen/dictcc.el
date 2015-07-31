@@ -124,7 +124,7 @@ Emacs does not like my regexps."
   "Send the request to look up QUERY on dict.cc."
   (let ((buffer (current-buffer)))
     (url-retrieve (format "http://www.dict.cc/?s=%s" (url-encode-url query))
-                  (lambda (log)
+                  (lambda (_log)
                     (let ((translations (dictcc--parse-http-response)))
                       (save-excursion
                         (switch-to-buffer buffer)
