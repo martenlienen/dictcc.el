@@ -1,9 +1,10 @@
 ;;; dictcc.el --- Look up translations on dict.cc  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2015 Marten Lienen
+;; Copyright (C) 2015 Raimon Grau
 ;;
 ;; Author: Marten Lienen <marten.lienen@gmail.com>
-;; Version: 0.1.0
+;; Version: 0.1.1
 ;; Keywords: convenience
 ;; Package-Requires: ((emacs "24") (cl-lib "0.5") (s "1.0") (dash "2.0") (helm "1.0"))
 
@@ -43,6 +44,16 @@
 (defcustom dictcc-candidate-width 30
   "Maximum length of a translation candidate."
   :type 'integer
+  :group 'dictcc)
+
+(defcustom dictcc-source-lang "en"
+  "Source language."
+  :type 'string
+  :group 'dictcc)
+
+(defcustom dictcc-destination-lang "de"
+  "Destination language."
+  :type 'string
   :group 'dictcc)
 
 (cl-defstruct dictcc--translation text tags)
@@ -123,7 +134,7 @@ Emacs does not like my regexps."
 (defun dictcc--request (query)
   "Send the request to look up QUERY on dict.cc."
   (let ((buffer (current-buffer)))
-    (url-retrieve (format "http://www.dict.cc/?s=%s" (url-encode-url query))
+    (url-retrieve (format "http://%s%s.dict.cc/?s=%s" dictcc-source-lang dictcc-destination-lang (url-encode-url query))
                   (lambda (_log)
                     (let ((translations (dictcc--parse-http-response)))
                       (save-excursion
@@ -175,12 +186,12 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
            (texts (mapcar #'dictcc--tag-to-text children)))
       (s-join "" texts))))
 
-(defun dictcc--insert-english-translation (pair)
-  "Insert the English translation of the selected PAIR."
+(defun dictcc--insert-source-translation (pair)
+  "Insert the source translation of the selected PAIR."
   (insert (dictcc--translation-text (car pair))))
 
-(defun dictcc--insert-german-translation (pair)
-  "Insert the German translation of the selected PAIR."
+(defun dictcc--insert-destination-translation (pair)
+  "Insert the destination translation of the selected PAIR."
   (insert (dictcc--translation-text (cdr pair))))
 
 (defun dictcc--candidate (pair)
@@ -188,9 +199,9 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
   (let* ((format-string (format "%%-%ds -- %%%ds"
                                 dictcc-candidate-width
                                 dictcc-candidate-width))
-         (english (dictcc--cap-string (dictcc--translation-to-string (car pair))))
-         (german (dictcc--cap-string (dictcc--translation-to-string (cdr pair))))
-         (text (format format-string english german)))
+         (source (dictcc--cap-string (dictcc--translation-to-string (car pair))))
+         (destination (dictcc--cap-string (dictcc--translation-to-string (cdr pair))))
+         (text (format format-string source destination)))
     (cons text pair)))
 
 (defun dictcc--cap-string (string)
@@ -205,10 +216,10 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
          (source `((name . ,(format "Translations for «%s»" query))
                    (candidates . ,candidates)
                    (action . ,(helm-make-actions
-                               "Insert English translation"
-                               #'dictcc--insert-english-translation
-                               "Insert German translation"
-                               #'dictcc--insert-german-translation)))))
+                               (format "Insert %s translation" dictcc-source-lang)
+                               #'dictcc--insert-source-translation
+                               (format "Insert %s translation" dictcc-destination-lang)
+                               #'dictcc--insert-destination-translation)))))
     (helm :sources (list source))))
 
 ;;;###autoload
