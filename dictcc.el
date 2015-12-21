@@ -131,10 +131,17 @@ Emacs does not like my regexps."
                   (mapcar (lambda (tag) (concat "[" tag "]"))
                           (dictcc--translation-tags translation)))))
 
+(defun dictcc--request-url (query)
+  "Generate a URL for QUERY."
+  (format "http://%s%s.dict.cc/?s=%s"
+          dictcc-source-lang
+          dictcc-destination-lang
+          (url-encode-url query)))
+
 (defun dictcc--request (query)
   "Send the request to look up QUERY on dict.cc."
   (let ((buffer (current-buffer)))
-    (url-retrieve (format "http://%s%s.dict.cc/?s=%s" dictcc-source-lang dictcc-destination-lang (url-encode-url query))
+    (url-retrieve (dictcc--request-url query)
                   (lambda (_log)
                     (let ((translations (dictcc--parse-http-response)))
                       (save-excursion
