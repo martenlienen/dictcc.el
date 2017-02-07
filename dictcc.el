@@ -57,7 +57,9 @@
   :group 'dictcc)
 
 (defface dictcc-tag-face
-  '((t :foreground "#555555"))
+  '((((background dark)) :inherit font-lock-comment-face :foreground "#555555")
+    (((background light)) :inherit font-lock-comment-face :foreground "#AAAAAA")
+    (default :inherit font-lock-comment-face))
   "Font Lock mode face used to fade tags."
   :group 'dictcc)
 
