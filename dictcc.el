@@ -246,5 +246,13 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
   (interactive "sQuery: \n")
   (dictcc--request query))
 
+;;;###autoload
+(defun dictcc-at-point ()
+  "Run a dict.cc search for the word at point or in an active region."
+  (interactive)
+  (if (use-region-p)
+      (dictcc (filter-buffer-substring (region-beginning) (region-end)))
+    (dictcc (word-at-point))))
+
 (provide 'dictcc)
 ;;; dictcc.el ends here
