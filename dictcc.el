@@ -6,7 +6,7 @@
 ;; Author: Marten Lienen <marten.lienen@gmail.com>
 ;; Version: 0.1.1
 ;; Keywords: convenience
-;; Package-Requires: ((emacs "24") (cl-lib "0.5") (s "1.0") (dash "2.0") (helm "1.0"))
+;; Package-Requires: ((emacs "24") (cl-lib "0.5") (s "1.0") (helm "1.0"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -30,7 +30,6 @@
 
 ;;; Code:
 
-(require 'dash)
 (require 's)
 (require 'helm)
 (require 'cl-lib)
