@@ -6,7 +6,7 @@
 ;; Author: Marten Lienen <marten.lienen@gmail.com>
 ;; Version: 0.1.1
 ;; Keywords: convenience
-;; Package-Requires: ((emacs "24") (cl-lib "0.5") (s "1.0") (helm "1.0"))
+;; Package-Requires: ((emacs "24.4") (cl-lib "0.5") (helm "1.0"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -87,9 +87,9 @@
     ;; Search for tags in a string form, so that we can more easily find tags,
     ;; that are split across tags (multi-word tags).
     (let* ((tag-strings (mapcar #'dictcc--tag-to-text tags-nodes))
-           (tag-string (s-join " " tag-strings))
+           (tag-string (string-join tag-strings " "))
            (tags (dictcc--tags-from-string tag-string)))
-      (make-dictcc--translation :text (s-join " " words)
+      (make-dictcc--translation :text (string-join words " ")
                                 :tags tags))))
 
 (defun dictcc--tags-from-string (string)
@@ -137,9 +137,9 @@ Emacs does not like my regexps."
   (concat (dictcc--translation-text translation)
           " "
           (propertize
-           (s-join " "
-                   (mapcar (lambda (tag) (concat "[" tag "]"))
-                           (dictcc--translation-tags translation)))
+           (string-join (mapcar (lambda (tag) (concat "[" tag "]"))
+                           (dictcc--translation-tags translation))
+                        " ")
            'face dictcc-tag-face)))
 
 (defun dictcc--request-url (query)
@@ -202,7 +202,7 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
       tag
     (let* ((children (cddr tag))
            (texts (mapcar #'dictcc--tag-to-text children)))
-      (s-join "" texts))))
+      (string-join texts ""))))
 
 (defun dictcc--insert-source-translation (pair)
   "Insert the source translation of the selected PAIR."
