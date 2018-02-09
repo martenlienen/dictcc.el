@@ -13,7 +13,7 @@ M-x package-install dictcc
 
 ## Commands
 
-The main command in thsi package is `dictcc`, which prompts you for a query and
+The main command in this package is `dictcc`, which prompts you for a query and
 lets you pick a translation through a helm interface. There is another
 convenience command `dictcc-at-point` that searches for the word at point or the
 content of an active region.
