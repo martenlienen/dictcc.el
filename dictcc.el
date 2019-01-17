@@ -161,9 +161,11 @@ Emacs does not like my regexps."
         (response (url-retrieve-synchronously (dictcc--request-url query))))
     (with-current-buffer response
       (let ((translations (dictcc--parse-http-response)))
-        (save-excursion
-          (switch-to-buffer buffer)
-          (dictcc--select-translation query translations))))))
+        (if (null translations)
+            (message "No translations for ’%s’" query)
+          (save-excursion
+            (switch-to-buffer buffer)
+            (dictcc--select-translation query translations)))))))
 
 (defun dictcc--parse-http-response ()
   "Parse the HTTP response into a list of translation pairs."
