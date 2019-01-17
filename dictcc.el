@@ -157,15 +157,13 @@ Emacs does not like my regexps."
 
 (defun dictcc--request (query)
   "Send the request to look up QUERY on dict.cc."
-  (let ((buffer (current-buffer))
-        (response (url-retrieve-synchronously (dictcc--request-url query))))
-    (with-current-buffer response
-      (let ((translations (dictcc--parse-http-response)))
-        (if (null translations)
-            (message "No translations for ’%s’" query)
-          (save-excursion
-            (switch-to-buffer buffer)
-            (dictcc--select-translation query translations)))))))
+  (let ((response (url-retrieve-synchronously (dictcc--request-url query))))
+    (let ((translations
+           (with-current-buffer response
+             (dictcc--parse-http-response))))
+      (if (null translations)
+          (message "No translations for ’%s’" query)
+        (dictcc--select-translation query translations)))))
 
 (defun dictcc--parse-http-response ()
   "Parse the HTTP response into a list of translation pairs."
