@@ -284,7 +284,9 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
   (interactive)
   (if (use-region-p)
       (dictcc (filter-buffer-substring (region-beginning) (region-end)))
-    (dictcc (word-at-point))))
+    (let ((query (word-at-point)))
+      (if query (dictcc query)
+        (error "No word at point")))))
 
 (provide 'dictcc)
 ;;; dictcc.el ends here
