@@ -61,6 +61,14 @@
   :type 'string
   :group 'dictcc)
 
+
+(defcustom dictcc-source-languages-alist '("en" "sv" "es" "fr")
+  "List of source languages to select from interactively."
+  :type 'list
+  :group 'dictcc)
+
+
+
 (defface dictcc-tag-face
   '((((background dark)) :inherit font-lock-comment-face :foreground "#555555")
     (((background light)) :inherit font-lock-comment-face :foreground "#AAAAAA")
@@ -148,16 +156,19 @@ Emacs does not like my regexps."
                         " ")
            'face dictcc-tag-face)))
 
-(defun dictcc--request-url (query)
+
+(defun dictcc--request-url (query &optional asklang)
   "Generate a URL for QUERY."
   (format "http://%s%s.dict.cc/?s=%s"
-          dictcc-source-lang
+	  (if (not asklang) dictcc-source-lang
+	    (dictcc--select-sourcelang-helm))
           dictcc-destination-lang
           (url-encode-url query)))
 
-(defun dictcc--request (query)
+
+(defun dictcc--request (query &optional asklang)
   "Send the request to look up QUERY on dict.cc."
-  (let* ((response (url-retrieve-synchronously (dictcc--request-url query)))
+  (let* ((response (url-retrieve-synchronously (dictcc--request-url query asklang)))
          (translations (with-current-buffer response
                          (dictcc--parse-http-response))))
     (if translations
@@ -271,11 +282,23 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
                                (dictcc--insert-candidate #'cdr))))))
     (helm :prompt "Filter: " :sources (list source))))
 
+(defun dictcc--select-sourcelang-helm ()
+  "Select source language with helm."
+  (let* ((source `((name . ,"Languages" )
+		   (candidates . ,dictcc-source-languages-alist)
+		   (action . ,(quote identity))
+		   )))
+  (helm :prompt "Filter: " :sources (list source))))
+
+
 ;;;###autoload
 (defun dictcc (query)
   "Search dict.cc for QUERY and insert a result at point."
   (interactive "sQuery: \n")
-  (dictcc--request query))
+  (let ((asklang current-prefix-arg))
+    (dictcc--request query asklang))
+  )
+
 
 ;;;###autoload
 (defun dictcc-at-point ()
