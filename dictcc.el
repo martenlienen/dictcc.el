@@ -61,7 +61,6 @@
   :type 'string
   :group 'dictcc)
 
-
 (defcustom dictcc-source-languages-alist '(("English" . "en")
 					   ("German" . "de")
 					   ("Swedish" . "sv")     
@@ -92,8 +91,6 @@
   "List of source languages to select from interactively."
   :type 'list
   :group 'dictcc)
-
-
 
 (defface dictcc-tag-face
   '((((background dark)) :inherit font-lock-comment-face :foreground "#555555")
@@ -182,14 +179,12 @@ Emacs does not like my regexps."
                         " ")
            'face dictcc-tag-face)))
 
-
 (defun dictcc--request-url (query)
   "Generate a URL for QUERY."
   (format "http://%s%s.dict.cc/?s=%s"
 	  dictcc-source-lang
           dictcc-destination-lang
           (url-encode-url query)))
-
 
 (defun dictcc--request (query)
   "Send the request to look up QUERY on dict.cc."
@@ -308,7 +303,7 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
     (helm :prompt "Filter: " :sources (list source))))
 
 (defun dictcc--select-sourcelang ()
-  "Select source language with helm."
+  "Select source language with completing read."
   (let ((lang (completing-read "Languages: "  dictcc-source-languages-alist)))
     (cdr (assoc lang dictcc-source-languages-alist))))
 
@@ -318,8 +313,7 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
   (interactive "sQuery: \n")
   (let* ((asklang current-prefix-arg)
 	 (dictcc-source-lang (if asklang (dictcc--select-sourcelang) dictcc-source-lang)))
-    (dictcc--request query))
-  )
+    (dictcc--request query)))
 
 ;;;###autoload
 (defun dictcc-at-point ()
