@@ -183,18 +183,17 @@ Emacs does not like my regexps."
            'face dictcc-tag-face)))
 
 
-(defun dictcc--request-url (query &optional asklang)
+(defun dictcc--request-url (query)
   "Generate a URL for QUERY."
   (format "http://%s%s.dict.cc/?s=%s"
-	  (if (not asklang) dictcc-source-lang
-	    (dictcc--select-sourcelang-helm))
+	  dictcc-source-lang
           dictcc-destination-lang
           (url-encode-url query)))
 
 
-(defun dictcc--request (query &optional asklang)
+(defun dictcc--request (query)
   "Send the request to look up QUERY on dict.cc."
-  (let* ((response (url-retrieve-synchronously (dictcc--request-url query asklang)))
+  (let* ((response (url-retrieve-synchronously (dictcc--request-url query)))
          (translations (with-current-buffer response
                          (dictcc--parse-http-response))))
     (if translations
@@ -321,8 +320,9 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
 (defun dictcc (query)
   "Search dict.cc for QUERY and insert a result at point."
   (interactive "sQuery: \n")
-  (let ((asklang current-prefix-arg))
-    (dictcc--request query asklang))
+  (let* ((asklang current-prefix-arg)
+	 (dictcc-source-lang (if asklang (dictcc--select-sourcelang-helm) dictcc-source-lang)))
+    (dictcc--request query))
   )
 
 
