@@ -307,24 +307,19 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
                                (dictcc--insert-candidate #'cdr))))))
     (helm :prompt "Filter: " :sources (list source))))
 
-(defun dictcc--select-sourcelang-helm ()
+(defun dictcc--select-sourcelang ()
   "Select source language with helm."
-  (let* ((source `((name . ,"Languages" )
-		   (candidates . ,dictcc-source-languages-alist)
-		   (action . ,(quote identity))
-		   )))
-  (helm :prompt "Filter: " :sources (list source))))
-
+  (let ((lang (completing-read "Languages: "  dictcc-source-languages-alist)))
+    (cdr (assoc lang dictcc-source-languages-alist))))
 
 ;;;###autoload
 (defun dictcc (query)
   "Search dict.cc for QUERY and insert a result at point."
   (interactive "sQuery: \n")
   (let* ((asklang current-prefix-arg)
-	 (dictcc-source-lang (if asklang (dictcc--select-sourcelang-helm) dictcc-source-lang)))
+	 (dictcc-source-lang (if asklang (dictcc--select-sourcelang) dictcc-source-lang)))
     (dictcc--request query))
   )
-
 
 ;;;###autoload
 (defun dictcc-at-point ()
