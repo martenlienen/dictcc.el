@@ -311,7 +311,7 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
 (defun dictcc (query &optional ask-languages)
   "Search dict.cc for QUERY and insert a result at point."
   (interactive "sQuery: \np")
-  (let* ((dictcc-source-lang (if ask-languages (dictcc--select-language "Source language: ") dictcc-source-lang))
+  (let ((dictcc-source-lang (if (= ask-languages 4) (dictcc--select-language "Source language: ") dictcc-source-lang))
          (dictcc-destination-lang (if (= ask-languages 16) (dictcc--select-language "Destination language: ")  dictcc-destination-lang)))
     (dictcc--request query)))
 
