@@ -175,7 +175,7 @@ Emacs does not like my regexps."
           " "
           (propertize
            (string-join (mapcar (lambda (tag) (concat "[" tag "]"))
-                           (dictcc--translation-tags translation))
+				(dictcc--translation-tags translation))
                         " ")
            'face dictcc-tag-face)))
 
