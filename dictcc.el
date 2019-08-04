@@ -304,15 +304,20 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
 
 (defun dictcc--select-sourcelang ()
   "Select source language with completing read."
-  (let ((lang (completing-read "Languages: "  dictcc-source-languages-alist)))
+  (let ((lang (completing-read "Source language: "  dictcc-source-languages-alist)))
+    (cdr (assoc lang dictcc-source-languages-alist))))
+
+(defun dictcc--select-destination-lang ()
+  "Select destination language with completing read"
+  (let ((lang (completing-read "Destination language: " dictcc-source-languages-alist)))
     (cdr (assoc lang dictcc-source-languages-alist))))
 
 ;;;###autoload
-(defun dictcc (query)
+(defun dictcc (query &optional ask-languages)
   "Search dict.cc for QUERY and insert a result at point."
-  (interactive "sQuery: \n")
-  (let* ((asklang current-prefix-arg)
-	 (dictcc-source-lang (if asklang (dictcc--select-sourcelang) dictcc-source-lang)))
+  (interactive "sQuery: \np")
+  (let* ((dictcc-source-lang (if ask-languages (dictcc--select-sourcelang) dictcc-source-lang))
+	 (dictcc-destination-lang (if (= ask-languages 16) (dictcc--select-destination-lang)  dictcc-destination-lang)))
     (dictcc--request query)))
 
 ;;;###autoload
