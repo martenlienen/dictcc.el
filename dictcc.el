@@ -61,7 +61,7 @@
   :type 'string
   :group 'dictcc)
 
-(defcustom dictcc-source-languages-alist '(("English" . "en")
+(defcustom dictcc-languages-alist '(("English" . "en")
                                            ("German" . "de")
                                            ("Swedish" . "sv")     
                                            ("Icelandic" . "is")     
@@ -304,13 +304,13 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
 
 (defun dictcc--select-sourcelang ()
   "Select source language with completing read."
-  (let ((lang (completing-read "Source language: "  dictcc-source-languages-alist)))
-    (cdr (assoc lang dictcc-source-languages-alist))))
+  (let ((lang (completing-read "Source language: "  dictcc-languages-alist)))
+    (cdr (assoc lang dictcc-languages-alist))))
 
 (defun dictcc--select-destination-lang ()
   "Select destination language with completing read"
-  (let ((lang (completing-read "Destination language: " dictcc-source-languages-alist)))
-    (cdr (assoc lang dictcc-source-languages-alist))))
+  (let ((lang (completing-read "Destination language: " dictcc-languages-alist)))
+    (cdr (assoc lang dictcc-languages-alist))))
 
 ;;;###autoload
 (defun dictcc (query &optional ask-languages)
