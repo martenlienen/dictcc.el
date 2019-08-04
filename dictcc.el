@@ -62,32 +62,32 @@
   :group 'dictcc)
 
 (defcustom dictcc-source-languages-alist '(("English" . "en")
-					   ("German" . "de")
-					   ("Swedish" . "sv")     
-					   ("Icelandic" . "is")     
-					   ("Russian" . "u")     
-					   ("Romanian" . "ro")     
-					   ("Italian" . "it")     
-					   ("French" . "fr")     
-					   ("Portuguese" . "pt")     
-					   ("Hungarian" . "hu")     
-					   ("Dutch" . "nl")     
-					   ("Slovak" . "sk")     
-					   ("Latin" . "la")     
-					   ("Finnish" . "fi")     
-					   ("Spanish" . "es")     
-					   ("Bulgarian" . "bg")     
-					   ("Croation" . "hr")     
-					   ("Norwegian" . "no")     
-					   ("Czech" . "cs")     
-					   ("Danish" . "da")     
-					   ("Turkish" . "tr")     
-					   ("Polish" . "pl")     
-					   ("Serbian" . "sr")     
-					   ("Greek" . "el")     
-					   ("Esperanto" . "eo")     
-					   ("Bosnian" . "bs")     
-					   ("Albanian" . "sq"))
+                                           ("German" . "de")
+                                           ("Swedish" . "sv")     
+                                           ("Icelandic" . "is")     
+                                           ("Russian" . "u")     
+                                           ("Romanian" . "ro")     
+                                           ("Italian" . "it")     
+                                           ("French" . "fr")     
+                                           ("Portuguese" . "pt")     
+                                           ("Hungarian" . "hu")     
+                                           ("Dutch" . "nl")     
+                                           ("Slovak" . "sk")     
+                                           ("Latin" . "la")     
+                                           ("Finnish" . "fi")     
+                                           ("Spanish" . "es")     
+                                           ("Bulgarian" . "bg")     
+                                           ("Croation" . "hr")     
+                                           ("Norwegian" . "no")     
+                                           ("Czech" . "cs")     
+                                           ("Danish" . "da")     
+                                           ("Turkish" . "tr")     
+                                           ("Polish" . "pl")     
+                                           ("Serbian" . "sr")     
+                                           ("Greek" . "el")     
+                                           ("Esperanto" . "eo")     
+                                           ("Bosnian" . "bs")     
+                                           ("Albanian" . "sq"))
   "List of source languages to select from interactively."
   :type 'list
   :group 'dictcc)
@@ -175,14 +175,14 @@ Emacs does not like my regexps."
           " "
           (propertize
            (string-join (mapcar (lambda (tag) (concat "[" tag "]"))
-				(dictcc--translation-tags translation))
+                                (dictcc--translation-tags translation))
                         " ")
            'face dictcc-tag-face)))
 
 (defun dictcc--request-url (query)
   "Generate a URL for QUERY."
   (format "http://%s%s.dict.cc/?s=%s"
-	  dictcc-source-lang
+          dictcc-source-lang
           dictcc-destination-lang
           (url-encode-url query)))
 
@@ -317,7 +317,7 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
   "Search dict.cc for QUERY and insert a result at point."
   (interactive "sQuery: \np")
   (let* ((dictcc-source-lang (if ask-languages (dictcc--select-sourcelang) dictcc-source-lang))
-	 (dictcc-destination-lang (if (= ask-languages 16) (dictcc--select-destination-lang)  dictcc-destination-lang)))
+         (dictcc-destination-lang (if (= ask-languages 16) (dictcc--select-destination-lang)  dictcc-destination-lang)))
     (dictcc--request query)))
 
 ;;;###autoload
