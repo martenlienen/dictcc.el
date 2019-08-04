@@ -302,22 +302,17 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
                                (dictcc--insert-candidate #'cdr))))))
     (helm :prompt "Filter: " :sources (list source))))
 
-(defun dictcc--select-sourcelang ()
-  "Select source language with completing read."
-  (let ((lang (completing-read "Source language: "  dictcc-languages-alist)))
-    (cdr (assoc lang dictcc-languages-alist))))
-
-(defun dictcc--select-destination-lang ()
-  "Select destination language with completing read"
-  (let ((lang (completing-read "Destination language: " dictcc-languages-alist)))
+(defun dictcc--select-language (prompt)
+  "Select language with completing read with prompt PROMPT"
+  (let ((lang (completing-read prompt  dictcc-languages-alist)))
     (cdr (assoc lang dictcc-languages-alist))))
 
 ;;;###autoload
 (defun dictcc (query &optional ask-languages)
   "Search dict.cc for QUERY and insert a result at point."
   (interactive "sQuery: \np")
-  (let* ((dictcc-source-lang (if ask-languages (dictcc--select-sourcelang) dictcc-source-lang))
-         (dictcc-destination-lang (if (= ask-languages 16) (dictcc--select-destination-lang)  dictcc-destination-lang)))
+  (let* ((dictcc-source-lang (if ask-languages (dictcc--select-language "Source language: ") dictcc-source-lang))
+         (dictcc-destination-lang (if (= ask-languages 16) (dictcc--select-language "Destination language: ")  dictcc-destination-lang)))
     (dictcc--request query)))
 
 ;;;###autoload
