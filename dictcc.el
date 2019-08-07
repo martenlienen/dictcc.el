@@ -61,6 +61,37 @@
   :type 'string
   :group 'dictcc)
 
+(defcustom dictcc-languages-alist '(("English" . "en")
+                                    ("German" . "de")
+                                    ("Swedish" . "sv")     
+                                    ("Icelandic" . "is")     
+                                    ("Russian" . "u")     
+                                    ("Romanian" . "ro")     
+                                    ("Italian" . "it")     
+                                    ("French" . "fr")     
+                                    ("Portuguese" . "pt")     
+                                    ("Hungarian" . "hu")     
+                                    ("Dutch" . "nl")     
+                                    ("Slovak" . "sk")     
+                                    ("Latin" . "la")     
+                                    ("Finnish" . "fi")     
+                                    ("Spanish" . "es")     
+                                    ("Bulgarian" . "bg")     
+                                    ("Croation" . "hr")     
+                                    ("Norwegian" . "no")     
+                                    ("Czech" . "cs")     
+                                    ("Danish" . "da")     
+                                    ("Turkish" . "tr")     
+                                    ("Polish" . "pl")     
+                                    ("Serbian" . "sr")     
+                                    ("Greek" . "el")     
+                                    ("Esperanto" . "eo")     
+                                    ("Bosnian" . "bs")     
+                                    ("Albanian" . "sq"))
+  "List of source languages to select from interactively."
+  :type 'list
+  :group 'dictcc)
+
 (defface dictcc-tag-face
   '((((background dark)) :inherit font-lock-comment-face :foreground "#555555")
     (((background light)) :inherit font-lock-comment-face :foreground "#AAAAAA")
@@ -144,7 +175,7 @@ Emacs does not like my regexps."
           " "
           (propertize
            (string-join (mapcar (lambda (tag) (concat "[" tag "]"))
-                           (dictcc--translation-tags translation))
+                                (dictcc--translation-tags translation))
                         " ")
            'face dictcc-tag-face)))
 
@@ -271,11 +302,29 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
                                (dictcc--insert-candidate #'cdr))))))
     (helm :prompt "Filter: " :sources (list source))))
 
+(defun dictcc--select-language (prompt)
+  "Select language with completing read with prompt PROMPT"
+  (let ((lang (completing-read prompt  dictcc-languages-alist)))
+    (cdr (assoc lang dictcc-languages-alist))))
+
 ;;;###autoload
-(defun dictcc (query)
+(defun dictcc (query &optional source-lang destination-lang)
   "Search dict.cc for QUERY and insert a result at point."
-  (interactive "sQuery: \n")
-  (dictcc--request query))
+  (interactive 
+   (let* ((local-query (read-from-minibuffer "Query: "))
+          (ask-languages (if current-prefix-arg (car current-prefix-arg) 0))
+          (local-source-lang (if (>= ask-languages 4)
+                                 (dictcc--select-language
+                                  (format "Source language (overwriting %s): " dictcc-source-lang))
+                               dictcc-source-lang))
+          (local-destination-lang (if (>= ask-languages 16)
+                                      (dictcc--select-language
+                                       (format "Destination language (overwriting %s): " dictcc-destination-lang))
+                                    dictcc-destination-lang))) 
+     (list local-query local-source-lang local-destination-lang)))
+  (let ((dictcc-source-lang (if source-lang source-lang dictcc-source-lang))
+        (dictcc-destination-lang (if destination-lang destination-lang dictcc-destination-lang)))
+    (dictcc--request query)))
 
 ;;;###autoload
 (defun dictcc-at-point ()
