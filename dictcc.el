@@ -303,27 +303,28 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
     (helm :prompt "Filter: " :sources (list source))))
 
 (defun dictcc--select-language (prompt)
-  "Select language with completing read with prompt PROMPT"
-  (let ((lang (completing-read prompt  dictcc-languages-alist)))
+  "Select language with completing read with prompt PROMPT."
+  (let ((lang (completing-read prompt dictcc-languages-alist)))
     (cdr (assoc lang dictcc-languages-alist))))
 
 ;;;###autoload
 (defun dictcc (query &optional source-lang destination-lang)
-  "Search dict.cc for QUERY and insert a result at point."
-  (interactive 
-   (let* ((local-query (read-from-minibuffer "Query: "))
-          (ask-languages (if current-prefix-arg (car current-prefix-arg) 0))
-          (local-source-lang (if (>= ask-languages 4)
-                                 (dictcc--select-language
-                                  (format "Source language (overwriting %s): " dictcc-source-lang))
-                               dictcc-source-lang))
-          (local-destination-lang (if (>= ask-languages 16)
-                                      (dictcc--select-language
-                                       (format "Destination language (overwriting %s): " dictcc-destination-lang))
-                                    dictcc-destination-lang))) 
-     (list local-query local-source-lang local-destination-lang)))
-  (let ((dictcc-source-lang (if source-lang source-lang dictcc-source-lang))
-        (dictcc-destination-lang (if destination-lang destination-lang dictcc-destination-lang)))
+  "Search dict.cc for QUERY and insert a result at point.
+
+Call it with a prefix argument to replace the source language and
+with double prefix argument to replace both."
+  (interactive
+   (let* ((ask-languages (if current-prefix-arg (car current-prefix-arg) 0))
+          (source-lang (when (>= ask-languages 4)
+                         (dictcc--select-language
+                          (format "Source language (overwriting %s): " dictcc-source-lang))))
+          (destination-lang (when (>= ask-languages 16)
+                              (dictcc--select-language
+                               (format "Destination language (overwriting %s): " dictcc-destination-lang))))
+          (query (read-from-minibuffer "Query: ")))
+     (list query source-lang destination-lang)))
+  (let ((dictcc-source-lang (or source-lang dictcc-source-lang))
+        (dictcc-destination-lang (or destination-lang dictcc-destination-lang)))
     (dictcc--request query)))
 
 ;;;###autoload
