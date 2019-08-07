@@ -4,7 +4,7 @@
 ;; Copyright (C) 2015 Raimon Grau
 ;;
 ;; Author: Marten Lienen <marten.lienen@gmail.com>
-;; Version: 1.0.1
+;; Version: 1.0.2
 ;; Keywords: convenience
 ;; Package-Requires: ((emacs "24.4") (cl-lib "0.5") (ivy "0.10.0"))
 
