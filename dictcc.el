@@ -308,11 +308,22 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
     (cdr (assoc lang dictcc-languages-alist))))
 
 ;;;###autoload
-(defun dictcc (query &optional ask-languages)
+(defun dictcc (query &optional source-lang destination-lang)
   "Search dict.cc for QUERY and insert a result at point."
-  (interactive "sQuery: \np")
-  (let ((dictcc-source-lang (if (>= ask-languages 4) (dictcc--select-language "Source language: ") dictcc-source-lang))
-        (dictcc-destination-lang (if (>= ask-languages 16) (dictcc--select-language "Destination language: ")  dictcc-destination-lang)))
+  (interactive 
+   (let* ((local-query (read-from-minibuffer "Query: "))
+          (ask-languages (if current-prefix-arg (car current-prefix-arg) 0))
+          (local-source-lang (if (>= ask-languages 4)
+                                 (dictcc--select-language
+                                  (format "Source language (overwriting %s): " dictcc-source-lang))
+                               dictcc-source-lang))
+          (local-destination-lang (if (>= ask-languages 16)
+                                      (dictcc--select-language
+                                       (format "Destination language (overwriting %s): " dictcc-destination-lang))
+                                    dictcc-destination-lang))) 
+     (list local-query local-source-lang local-destination-lang)))
+  (let ((dictcc-source-lang (if source-lang source-lang dictcc-source-lang))
+        (dictcc-destination-lang (if destination-lang destination-lang dictcc-destination-lang)))
     (dictcc--request query)))
 
 ;;;###autoload
