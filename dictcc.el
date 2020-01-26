@@ -181,7 +181,7 @@ Emacs does not like my regexps."
 
 (defun dictcc--request-url (query)
   "Generate a URL for QUERY."
-  (format "http://%s%s.dict.cc/?s=%s"
+  (format "https://%s%s.dict.cc/?s=%s"
           dictcc-source-lang
           dictcc-destination-lang
           (url-encode-url query)))
