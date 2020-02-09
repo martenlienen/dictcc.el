@@ -31,6 +31,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(eval-when-compile (require 'subr-x))
 
 (defgroup dictcc ()
   "Look up translations on dict.cc."
