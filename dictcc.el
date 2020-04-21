@@ -191,6 +191,7 @@ Emacs does not like my regexps."
   "Send the request to look up QUERY on dict.cc."
   (let* ((response (url-retrieve-synchronously (dictcc--request-url query)))
          (translations (with-current-buffer response
+                         (goto-char (point-min))
                          (dictcc--parse-http-response))))
     (if translations
         (dictcc--select-translation query translations)
