@@ -273,8 +273,11 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
     (t (message "dictcc.el requires ivy or helm."))))
 
 (defun dictcc--insert-candidate (selector)
-  "Insert translation text extracted from an ivy/helm item with SELECTOR."
+  "Insert translation text extracted from an ivy/helm item with SELECTOR.
+If there is an active region, kill it before insertion."
   (lambda (item)
+    (when (use-region-p)
+      (kill-region (region-beginning) (region-end)))
     (insert (dictcc--translation-text (funcall selector item)))))
 
 (when (require 'ivy nil 'noerror)
