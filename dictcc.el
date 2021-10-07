@@ -309,6 +309,22 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
   (let ((lang (completing-read prompt dictcc-languages-alist)))
     (cdr (assoc lang dictcc-languages-alist))))
 
+(defun dictcc--get-query ()
+  "Query the user for a word to look up.
+If there is a word at point or the region is active, suggest this
+as a default option on empty input."
+  (cl-flet ((get-completion (default)
+             (let ((compl (read-from-minibuffer (concat "Query" " (" default "): "))))
+               (if (string-empty-p compl)
+                   default
+                 compl))))
+    (cond ((use-region-p)
+           (get-completion (filter-buffer-substring (region-beginning) (region-end))))
+          ((word-at-point)
+           (get-completion (word-at-point)))
+          (t
+           (read-from-minibuffer "Query: ")))))
+
 ;;;###autoload
 (defun dictcc (query &optional source-lang destination-lang)
   "Search dict.cc for QUERY and insert a result at point.
@@ -323,7 +339,7 @@ with double prefix argument to replace both."
           (destination-lang (when (>= ask-languages 16)
                               (dictcc--select-language
                                (format "Destination language (overwriting %s): " dictcc-destination-lang))))
-          (query (read-from-minibuffer "Query: ")))
+          (query (dictcc--get-query)))
      (list query source-lang destination-lang)))
   (let ((dictcc-source-lang (or source-lang dictcc-source-lang))
         (dictcc-destination-lang (or destination-lang dictcc-destination-lang)))
