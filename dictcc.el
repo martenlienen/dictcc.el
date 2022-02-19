@@ -42,9 +42,10 @@
 (defcustom dictcc-completion-backend
   (cond
    ((require 'ivy nil 'noerror) 'ivy)
-   ((require 'helm nil 'noerror) 'helm))
+   ((require 'helm nil 'noerror) 'helm)
+   (t 'completing-read))
   "Completion backend used for choosing a translation to insert."
-  :type '(choice (const 'ivy) (const 'helm) (const nil))
+  :type '(choice (const 'ivy) (const 'helm) (const 'completing-read) (const nil))
   :group 'dictcc)
 
 (defcustom dictcc-candidate-width 30
@@ -270,10 +271,11 @@ At the moment they are of the form `<tr id='trXXX'></tr>'."
   (cl-case dictcc-completion-backend
     ('ivy (dictcc--select-translation-ivy query translations))
     ('helm (dictcc--select-translation-helm query translations))
-    (t (message "dictcc.el requires ivy or helm."))))
+    ('completing-read (dictcc--select-translation-completing-read query translations))
+    (t (message "Please set `dictcc-completion-backend' to one of the possible values."))))
 
 (defun dictcc--insert-candidate (selector)
-  "Insert translation text extracted from an ivy/helm item with SELECTOR.
+  "Insert translation text extracted from a completion item with SELECTOR.
 If there is an active region, kill it before insertion."
   (lambda (item)
     (when (use-region-p)
@@ -311,6 +313,16 @@ If there is an active region, kill it before insertion."
   "Select language with completing read with prompt PROMPT."
   (let ((lang (completing-read prompt dictcc-languages-alist)))
     (cdr (assoc lang dictcc-languages-alist))))
+
+(defun dictcc--select-translation-completing-read (query translations)
+  "Choose from TRANSLATIONS for QUERY with `completing-read'."
+  (let* ((candidates (mapcar #'dictcc--candidate translations))
+         ;; Find the actual completion *item*, because `completing-read'
+         ;; only returns the string.
+         (selection (completing-read "Filter: " candidates nil t))
+         (compl (cl-find selection candidates
+                         :test (lambda (s c) (string= s (car c))))))
+    (funcall (dictcc--insert-candidate #'cadr) compl)))
 
 (defun dictcc--get-query ()
   "Query the user for a word to look up.
