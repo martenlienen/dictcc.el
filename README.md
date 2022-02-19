@@ -14,9 +14,9 @@ M-x package-install dictcc
 ## Commands
 
 The main command in this package is `dictcc`, which prompts you for a query and
-lets you pick a translation through a completion interface (either ivy or
-helm). There is another convenience command `dictcc-at-point` that searches for
-the word at point or the content of an active region.
+lets you pick a translation through a completion interface (either ivy, helm or
+completing-read). There is another convenience command `dictcc-at-point` that
+searches for the word at point or the content of an active region.
 
 ![Showcasing dictcc](http://i.imgur.com/2GwXnCw.png)
 
