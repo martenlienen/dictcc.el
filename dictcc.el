@@ -6,7 +6,7 @@
 ;; Author: Marten Lienen <marten.lienen@gmail.com>
 ;; Version: 1.0.2
 ;; Keywords: convenience
-;; Package-Requires: ((emacs "24.4") (cl-lib "0.5") (ivy "0.10.0"))
+;; Package-Requires: ((emacs "24.4") (cl-lib "0.5"))
 
 ;; This file is not part of GNU Emacs.
 
